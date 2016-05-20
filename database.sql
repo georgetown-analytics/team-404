@@ -39,8 +39,7 @@ CREATE TABLE proc (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 load data local infile '/home/pcgeller/weirdo/data/proc.txt'
   into table proc
   fields terminated by ',' lines terminated by '\n'
-  (tstamp, userdomain, srcuser, dstuser, srccomputer, dstcomputer,
-  authtype, passfail);
+  (tstamp, userdomain,  computer, processname, startend);
 
 #setup flows
 CREATE TABLE flows (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -58,15 +57,15 @@ load data local infile '/home/pcgeller/weirdo/data/flows.txt'
   into table flows
   fields terminated by ',' lines terminated by '\n'
   (tstamp, duration, srccomputer, srcport, dstcomputer, dstport,
-    protocol, packetcnt, bytecnt)
+    protocol, packetcnt, bytecnt);
 
 #setup dns
 CREATE TABLE dns (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  tstamp INTEGER(1),
+  tstamp INTEGER(0),
   srccomputer VARCHAR(20),
   computerresolved VARCHAR(20));
 
 LOAD DATA LOCAL INFILE '/home/pcgeller/weirdo/data/dns.txt'
   INTO TABLE dns
   FIELDS TERMINATED BY ',' LINES TEMINATED BY '\n'
-  (tstamp, srccomputer, computerresolved)
+  (tstamp, srccomputer, computerresolved);
