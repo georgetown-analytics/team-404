@@ -11,7 +11,7 @@ LOAD DATA LOCAL INFILE '/home/pcgeller/weirdo/data/redteam.txt'
   INTO TABLE redteam
     FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
     (tstamp, userdomain, src, dst);
-/*
+
 #setup auth
 CREATE TABLE auth (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   tstamp INTEGER(0),
@@ -27,7 +27,7 @@ LOAD DATA LOCAL INFILE '/home/pcgeller/weirdo/data/auth.txt'
   FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
   (tstamp, userdomain, srcuser, dstuser, srccomputer, dstcomputer,
   authtype, passfail);
-*/
+
 #setup proc
 CREATE TABLE proc (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   tstamp integer(0),
