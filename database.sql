@@ -1,8 +1,8 @@
 #mysql -v -h team404.czuxenny2zus.us-east-1.rds.amazonaws.com -P 3306 -u pcgeller -p
-
+#GRANT ALL PRIVILEGES ON dbTest.* To 'user'@'hostname' IDENTIFIED BY 'password';
 #setup redteam
 CREATE TABLE redteam (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-tstamp VARCHAR(30),
+tstamp INTEGER(0),
 userdomain VARCHAR(30),
 src VARCHAR(20),
 dst VARCHAR(20));
@@ -12,7 +12,7 @@ LOAD DATA LOCAL INFILE '/home/pcgeller/weirdo/data/redteam.txt'
     FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
     (tstamp, userdomain, src, dst);
 
-#setup auth
+/*#setup auth
 CREATE TABLE auth (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   tstamp INTEGER(0),
   userdomain VARCHAR(20),
@@ -26,7 +26,7 @@ LOAD DATA LOCAL INFILE '/home/pcgeller/weirdo/data/auth.txt'
   INTO TABLE auth
   FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
   (tstamp, userdomain, srcuser, dstuser, srccomputer, dstcomputer,
-  authtype, passfail);
+  authtype, passfail);*/
 
 #setup proc
 CREATE TABLE proc (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -67,5 +67,5 @@ CREATE TABLE dns (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 
 LOAD DATA LOCAL INFILE '/home/pcgeller/weirdo/data/dns.txt'
   INTO TABLE dns
-  FIELDS TERMINATED BY ',' LINES TEMINATED BY '\n'
+  FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
   (tstamp, srccomputer, computerresolved);
