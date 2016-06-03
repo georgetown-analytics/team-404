@@ -13,5 +13,6 @@ CREATE TABLE auth (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 LOAD DATA LOCAL INFILE '/media/pcgeller/SharedDrive/auth.txt'
   INTO TABLE auth
   FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
-  (tstamp, srcuserdomain, dstuserdomain, srccomputer, dstcomputer, authtype, logontype, authorient, 	passfail);
+  (tstamp, userdomain, srcuser, dstuser, srccomputer, dstcomputer,
+  authtype, passfail);
 
