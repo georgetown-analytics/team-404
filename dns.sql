@@ -1,8 +1,10 @@
+
 #setup dns
 CREATE TABLE dns (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  tstamp INTEGER(0),
+  tstamp INTEGER(30),
   srccomputer VARCHAR(20),
-  computerresolved VARCHAR(20));
+  computerresolved VARCHAR(20),
+  redteam VARCHAR(20));
 
 LOAD DATA LOCAL INFILE '/home/pcgeller/weirdo/data/dns.txt'
   INTO TABLE dns
@@ -14,7 +16,10 @@ CREATE TABLE redteam (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 tstamp VARCHAR(30),
 userdomain VARCHAR(30),
 src VARCHAR(20),
-dst VARCHAR(20));
+dst VARCHAR(20),
+usr VARCHAR(10),
+domain VARCHAR(15),
+redteam VARCHAR(5));
 
 LOAD DATA LOCAL INFILE '/home/pcgeller/weirdo/data/redteam.txt'
   INTO TABLE redteam
