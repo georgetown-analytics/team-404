@@ -34,8 +34,8 @@ add column srcuser varchar(10),
 add column srcdomain varchar(20),
 add column dstuser varchar(10),
 add column dstdomain varchar(20);
-
+/*
 alter table proc
 add column usr varchar(10),
 add column domain varchar(15);
-
+*/
