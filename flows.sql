@@ -8,7 +8,8 @@ CREATE TABLE flows (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   dstport varchar(20),
   protocol varchar(20),
   packetcnt varchar(20),
-  bytecnt varchar(20));
+  bytecnt varchar(20),
+  redteam VARCHAR(5));
 
 load data local infile '/home/pcgeller/weirdo/data/flows.txt'
   into table flows

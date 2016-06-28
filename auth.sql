@@ -8,7 +8,12 @@ CREATE TABLE auth (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   authtype VARCHAR (20),
   logontype VARCHAR (20),
   authorient VARCHAR (20),
-  passfail VARCHAR (15));
+  passfail VARCHAR (15),
+  srcusr VARCHAR(10),
+  srcdomain VARCHAR(15)
+  dstusr VARCHAR(10),
+  dstdomain VARCHAR(15),
+  redteam VARCHAR(5);
 
 LOAD DATA LOCAL INFILE '/media/pcgeller/SharedDrive/auth.txt'
   INTO TABLE auth
