@@ -4,6 +4,9 @@ cur = conn.cursor()
 
 cur.execute()
 
+uniquecomputer = 
+uniqueuser = 
+ 
 
 cur.close()
 conn.close()
