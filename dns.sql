@@ -1,27 +1,21 @@
+/*
+--setup dns
+CREATE TABLE dns (id SERIAL,
+  tstamp INTEGER,
+  srccomputer VARCHAR,
+  computerresolved VARCHAR,
+  redteam VARCHAR);
 
-#setup dns
-CREATE TABLE dns (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  tstamp INTEGER(30),
-  srccomputer VARCHAR(20),
-  computerresolved VARCHAR(20),
-  redteam VARCHAR(20));
+\COPY dns(tstamp,srccomputer,computerresolved) FROM '/home/pcgeller/weirdo/data/dns.txt' DELIMITER ',' CSV;
+*/
+--setup redteam
+CREATE TABLE redteam (id SERIAL,
+tstamp VARCHAR,
+userdomain VARCHAR,
+src VARCHAR,
+dst VARCHAR,
+usr VARCHAR,
+domain VARCHAR,
+redteam VARCHAR);
 
-LOAD DATA LOCAL INFILE '/home/pcgeller/weirdo/data/dns.txt'
-  INTO TABLE dns
-  FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
-  (tstamp, srccomputer, computerresolved);
-
-#setup redteam
-CREATE TABLE redteam (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-tstamp VARCHAR(30),
-userdomain VARCHAR(30),
-src VARCHAR(20),
-dst VARCHAR(20),
-usr VARCHAR(10),
-domain VARCHAR(15),
-redteam VARCHAR(5));
-
-LOAD DATA LOCAL INFILE '/home/pcgeller/weirdo/data/redteam.txt'
-  INTO TABLE redteam
-    FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
-    (tstamp, userdomain, src, dst);
+\COPY redteam(tstamp,userdomain,src,dst) FROM '/home/pcgeller/weirdo/data/redteam.txt' DELIMITER ',' CSV;

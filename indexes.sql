@@ -1,31 +1,17 @@
-#setup auth indexes
+create index dnssrccomputer on dns (srccomputer);
+create index dnscptresolved on dns (computerresolved);
 
-#alter table auth add index tstamp (tstamp);
-#alter table auth add index srccomputer (srccomputer);
-#alter table auth add index dstcomputer (dstcomputer);
-#alter table auth add index srcuserdomain (srcuserdomain);
+create index flowssrccomputer on flows (srccomputer);
+create index flowsdstcomputer on flows (dstcomputer);
 
-#setup flows indexes
+create index redteamsrc on redteam (src);
+create index redteamdst on redteam (dst);
+create index redteamusr on redteam (usr);
+create index redteamdomain on redteam (domain);
 
-#alter table flows add index tstamp (tstamp);
-#alter table flows add index srccomputer (srccomputer);
-#alter table flows add index dstcomputer (dstcomputer);
-#alter table flows add index srcport (srcport);
-#alter table flows add index dstport (dstport);
-#alter table flows add index bytecnt (bytecnt);
+create index proccomputer on proc (computer);
+create index procprocessname on proc (processname);
+create index procusr on proc (usr);
+create index procdomain on proc (domain);
 
-#setup proc indexes
 
-alter table proc add index tstamp (tstamp);
-alter table proc add index userdomain (userdomain);
-alter table proc add index computer (computer);
-
-#setup dns indexes
-
-alter table dns add index tstamp (tstamp);
-alter table dns add index srccomputer (srccomputer);
-alter table dns add index computerresolved (computerresolved);
-
-#setup redteam indexes
-
-alter table redteam add index tstamp (tstamp);
