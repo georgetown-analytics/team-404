@@ -1,20 +1,22 @@
 --split up user@domain into two seperate fields
 
-/*UPDATE redteam 
-SET usr = sq.usr,
-domain = sq.domain
-FROM (SELECT userdomain, split_part(userdomain, '@', 1) as usr,
-split_part(userdomain,'@',2) as domain FROM redteam) as sq
-*/
+
+ALTER TABLE proc
+RENAME usr TO comp;
+
+ALTER TABLE proc
+RENAME userdomain TO compdomain;
+
+UPDATE redteam
+set usr = split_part(userdomain, '@', 1)
+set domain = split_part(userdomain, '@', 2);
 
 UPDATE proc
-SET usr = sq.usr,
-domain = sq.domain
-FROM (SELECT userdomain, split_part(userdomain, '@', 1) as usr,
-split_part(userdomain,'@',2) as domain FROM proc) as sq;
+set comp = split_part(compdomain, '$@', 1)
+set domain = split_part(compdomain, '$@', 2);
 
 UPDATE auth
-SET usr = sq.usr,
-domain = sq.domain
-FROM (SELECT userdomain, split_part(userdomain, '@', 1) as usr,
-split_part(userdomain,'@',2) as domain FROM auth) as sq;
+set srcusr = split_part(srcuserdomain, '@', 1)
+set srcdomain = split_part(srcuserdomain, '@', 2)
+set dstusr = split_part(dstuserdomain, '@', 1)
+set dstdomain = split_part(dstuserdomain, '@', 2);
