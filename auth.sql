@@ -13,6 +13,6 @@ CREATE TABLE auth (id SERIAL,
   srcdomain VARCHAR,
   dstusr VARCHAR,
   dstdomain VARCHAR,
-  redteam VARCHAR;
+  redteam VARCHAR);
 
-\COPY auth(tstamp,srcuserdomain,dstuserdomain,srccomputer,dstcomputer,authtype,logontype,authorient,passfail) FROM '/home/pcgeller/weirdo/data/auth.txt' DELIMITER ',' CSV;
+\COPY auth(tstamp,srcuserdomain,dstuserdomain,srccomputer,dstcomputer,authtype,logontype,authorient,passfail) FROM '/media/pcgeller/SharedDrive/auth.txt' DELIMITER ',' CSV;
