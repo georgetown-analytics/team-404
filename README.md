@@ -1,5 +1,5 @@
 ## WEIRDO
-# Weirdo Estimates Intrustion & Really Dangerous Octopuses
+# Weirdo Estimates Intrustion & Really Dangerous Objects
 
 Weirdo is a project to detect anomalies in the Los Alamos National Lab cyber security event data.  The data is hosted on their website:
  csr.lanl.gov/data/cyber1   
