@@ -24,11 +24,19 @@ dstdomain = split_part(dstuserdomain, '@', 2);
 */
 
 UPDATE proc
-SET comp = split_part(comp,'@',1)
-SET domain = split_part(comp,'@',2);
+SET comp = split_part(compdomain,'@',1),
+domain = split_part(compdomain,'@',2);
 
+UPDATE proc 
+SET comp = split_part(comp,'$',1);
+
+VACUUM FULL VERBOSE proc;
+VACUUM FULL VERBOSE auth;
+VACUUM FULL VERBOSE dns;
+
+/*
 UPDATE auth
-SET srcusr = split_part(srcusr,'$',1)
-SET dstusr = split_part(dstusr,'$',1);
-
+SET srcusr = split_part(srcusr,'$',1),
+dstusr = split_part(dstusr,'$',1);
+*/
 
