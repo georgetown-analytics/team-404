@@ -5,35 +5,39 @@ import psycopg2 as pg
 from config.rdsconfig import host, rdsuser, rdspassword
 
 #set up
-
-conn = pg.connect(
-	host=host,
-	port="5439",
-	database="weirdo",
-	user=rdsuser,
-	password=rdspassword
-)
-cur = conn.cursor()
+def connectaws():
+		conn = pg.connect(
+			host=host,
+			port="5432",
+			database="weirdo",
+			user=rdsuser,
+			password=rdspassword
+		)
+		cur = conn.cursor()
+		return cur
 
 #create list of tables
-
+#cur()
 #create list of unique computers
-
-
 #create list of unique users
 
-#associate red team activity with rest of data
+#cur = cur
 
-#
-cur.execute("SELECT DISTINCT computer FROM redteam;")
-uniqueredteamcomputers = cur.fetchall()
+cur.execute("SELECT DISTINCT usr FROM redteam;")
+unqredteamusr = list(cur.fetchall())
 
-for computer in uniqueredteamcomputers:
+cur.execute("SELECT DISTINCT dst FROM redteam;")
+rdteamunqcmp = cur.fetchall()
+#uniqueredteamcomputers = cur.fetchall()
+for computer in rdteamunqcmp:
 	print computer
 	#SQL = "CREATE TABLE %s
 
 	#data = computer
 	#cur.execute(
 
-cur.close()
-conn.close()
+def disconnectaws():
+	cur.close()
+	conn.close()
+	return
+
