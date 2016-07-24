@@ -25,11 +25,11 @@ cur = conn.cursor()
 #associate red team activity with rest of data
 
 #
-cur.execute("SELECT DISTINCT computer FROM redteam;")
-uniqueredteamcomputers = cur.fetchall()
+#cur.execute("SELECT DISTINCT computer FROM redteam;")
+#uniqueredteamcomputers = cur.fetchall()
 
-for computer in uniqueredteamcomputers:
-	print computer
+# for computer in uniqueredteamcomputers:
+# 	print computer
 	#SQL = "CREATE TABLE %s
 
 	#data = computer
