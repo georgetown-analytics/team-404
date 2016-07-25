@@ -23,6 +23,7 @@ def connectaws():
 
 #cur = cur
 
+<<<<<<< HEAD
 cur.execute("SELECT DISTINCT usr FROM redteam;")
 unqredteamusr = list(cur.fetchall())
 
@@ -31,6 +32,14 @@ rdteamunqcmp = cur.fetchall()
 #uniqueredteamcomputers = cur.fetchall()
 for computer in rdteamunqcmp:
 	print computer
+=======
+#
+#cur.execute("SELECT DISTINCT computer FROM redteam;")
+#uniqueredteamcomputers = cur.fetchall()
+
+# for computer in uniqueredteamcomputers:
+# 	print computer
+>>>>>>> 65a7caf9d2f5e2d182563e11eec50687c6d77e87
 	#SQL = "CREATE TABLE %s
 
 	#data = computer
