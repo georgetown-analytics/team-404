@@ -1,12 +1,17 @@
-import psycopg2 as pg
+##Script to create a new table of user features.  Lists all unique users in the data and creates features in the table.  Features include: number of log on/off, session time, frequency, average time they get to work.
 
-#store connection information in seperate file that is in .gitignore
+import csv
+import psycopg2
+import pickle
 
+from more_itertools import unique_everseen
+
+#Connection information is stored in config file that is added to .gitignore
 from config.rdsconfig import host, rdsuser, rdspassword
 
-#set up
-def connectaws():
-		conn = pg.connect(
+#set up a cursor
+def startcursor():
+		conn = psycopg2.connect(
 			host=host,
 			port="5432",
 			database="weirdo",
@@ -16,37 +21,79 @@ def connectaws():
 		cur = conn.cursor()
 		return cur
 
-#create list of tables
-#cur()
-#create list of unique computers
-#create list of unique users
+#get all of the table names
+def tblnames(cur):
+	cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';")
+	tblList = cur.fetchall()
+	return tblList
 
-#cur = cur
+def unq(cur):
+		cur.execute("SELECT DISTINCT comp FROM proc;")
+		allusrs = cur.fetchall()
 
-<<<<<<< HEAD
-cur.execute("SELECT DISTINCT usr FROM redteam;")
-unqredteamusr = list(cur.fetchall())
+		cur.execute("SELECT DISTINCT usr FROM redteam;")
+		temp = cur.fetchall()
+		allusrs.extend(temp)
 
-cur.execute("SELECT DISTINCT dst FROM redteam;")
-rdteamunqcmp = cur.fetchall()
-#uniqueredteamcomputers = cur.fetchall()
-for computer in rdteamunqcmp:
-	print computer
-=======
-#
-#cur.execute("SELECT DISTINCT computer FROM redteam;")
-#uniqueredteamcomputers = cur.fetchall()
+		cur.execute("SELECT DISTINCT srcusr FROM auth;")
+		temp = cur.fetchall()
+		allusrs.extend(temp)
 
-# for computer in uniqueredteamcomputers:
-# 	print computer
->>>>>>> 65a7caf9d2f5e2d182563e11eec50687c6d77e87
-	#SQL = "CREATE TABLE %s
+		cur.execute("SELECT DISTINCT dstusr FROM auth;")
+		temp = cur.fetchall()
+		allusrs.extend(temp)
+		#unique = list(unique_everseen(allusrs))
+		unique = allusrs
+		print("Unique users compiled and deduped.")
+		tocsv('uniqueusersfile.csv',unique)
+		return unique
 
-	#data = computer
-	#cur.execute(
+def unqRTusr(cur):
+	cur.execute("SELECT DISTINCT usr FROM redteam")
+	unqRT = cur.fetchall()
+	pkl(unqRT, "jar/unqredteamusrs.pkl")
+	print(unqRT)
+	return unqRT
 
-def disconnectaws():
+def queryalltbl(cur, tblList):
+	queries = []
+	for i, tbl in tblList:
+		queries[i] = "SELECT "
+
+def tocsv(filename,data):
+	with open(filename,'w', newline='') as file:
+		writer = csv.writer(file)
+		try:
+			for row in data:
+				writer.writerow([row])
+			print("File saved.")
+		except csv.Error as e:
+			print(e)
+
+def mkusrtbl(unqusr,cur):
+	for usr in unqusr:
+		query = "CREATE TABLE " + usr[0] + \
+		" AS SELECT * FROM auth WHERE srcusr = \'" + usr[0] + "\' LIMIT 10;"
+		print(query)
+		cur.execute(query)
+
+def cc(cur):
 	cur.close()
-	conn.close()
-	return
 
+def pickuniqueuser(cur, sample, table, column, uniquelist):
+	for i in range(sample):
+		query = "SELECT * from " + table + " WHERE " + column + " = \'" + i + "\' ;"
+		print(query)
+
+def pkl(cucumber, picklename):
+	with open(picklename, 'wb') as output:
+		pickle.dump(cucumber, output, pickle.HIGHEST_PROTOCOL)
+		print("Pickle made. Filename = " + picklename)
+
+
+## make some test variables
+x = range(10)
+l = list(x)
+filename = 'woc11.csv'
+cur = startcursor()
+unqusr = [('U66',),('U2837',)]
