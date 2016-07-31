@@ -1,0 +1,5 @@
+#amazon rds password
+connection_string = "host="team404.czuxenny2zus.us-east-1.rds.amazonaws.com", 
+
+rdsus"pcgeller"
+rdspassword = "pcgeller"
