@@ -46,6 +46,7 @@ def unq(cur):
 		unique = allusrs
 		print("Unique users compiled and deduped.")
 		tocsv('uniqueusersfile.csv',unique)
+		pkl(unique, "jar/uniqueusers.pkl")
 		return unique
 
 def unqRTusr(cur):
