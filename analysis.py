@@ -1,9 +1,10 @@
-##Script to create a new table of user features.  Lists all unique users in the data and creates features in the table.  Features include: number of log on/off, session time, frequency, average time they get to work.
+##None of this code should be run from untrusted connections.
+##It is vulnerable to SQL Injection attacks.
 
 import csv
 import psycopg2
 import pickle
-
+import random
 from more_itertools import unique_everseen
 
 #Connection information is stored in config file that is added to .gitignore
@@ -27,28 +28,32 @@ def tblnames(cur):
 	tblList = cur.fetchall()
 	return tblList
 
+#Make a list of unique users (also includes some source computers).  We need to decide how we define a 'user'
+##and if we remove the computers.
+
 def unq(cur):
-		cur.execute("SELECT DISTINCT comp FROM proc;")
-		allusrs = cur.fetchall()
+	cur.execute("SELECT DISTINCT comp FROM proc;")
+	allusrs = cur.fetchall()
 
-		cur.execute("SELECT DISTINCT usr FROM redteam;")
-		temp = cur.fetchall()
-		allusrs.extend(temp)
+	cur.execute("SELECT DISTINCT usr FROM redteam;")
+	temp = cur.fetchall()
+	allusrs.extend(temp)
 
-		cur.execute("SELECT DISTINCT srcusr FROM auth;")
-		temp = cur.fetchall()
-		allusrs.extend(temp)
+	cur.execute("SELECT DISTINCT srcusr FROM auth;")
+	temp = cur.fetchall()
+	allusrs.extend(temp)
 
-		cur.execute("SELECT DISTINCT dstusr FROM auth;")
-		temp = cur.fetchall()
-		allusrs.extend(temp)
-		#unique = list(unique_everseen(allusrs))
-		unique = allusrs
-		print("Unique users compiled and deduped.")
-		tocsv('uniqueusersfile.csv',unique)
-		pkl(unique, "jar/uniqueusers.pkl")
-		return unique
+	cur.execute("SELECT DISTINCT dstusr FROM auth;")
+	temp = cur.fetchall()
+	allusrs.extend(temp)
+	#unique = list(unique_everseen(allusrs))
+	unique = allusrs
+	print("Unique users compiled and deduped.")
+	tocsv('uniqueusersfile.csv',unique)
+	pkl(unique, "jar/uniqueusers.pkl")
+	return unique
 
+#Make a list of the unique redteam users.
 def unqRTusr(cur):
 	cur.execute("SELECT DISTINCT usr FROM redteam")
 	unqRT = cur.fetchall()
@@ -56,10 +61,50 @@ def unqRTusr(cur):
 	print(unqRT)
 	return unqRT
 
+#Query all the tables in the database for a particular field value.
 def queryalltbl(cur, tblList):
 	queries = []
 	for i, tbl in tblList:
 		queries[i] = "SELECT "
+
+#Subset the auth table by user.
+def mkusrtbl(unqusr,cur):
+	for usr in unqusr:
+		query = "CREATE TABLE " + usr[0] + \
+		" AS SELECT * FROM auth WHERE srcusr = \'" + usr[0] + "\' LIMIT 10;"
+		print(query)
+		cur.execute(query)
+
+#Close postgres connection
+def cc(cur):
+	cur.close()
+
+#Select n random unique values a table.
+def selectrandom(cur, n, unqlist, table, field):
+	"""Select n unique values from a list.\
+	Then, query a specified field and table for the results.\
+	Saves a pkl and csv."""
+	sample = []
+	output = []
+	sample = random.sample(unqlist, n)
+	print("this is the tuple sample")
+	print(sample)
+	sample = ['x' for x in sample]
+	print("this is the comprende sample")
+	print(sample)
+	for i in sample:
+		print(i)
+		query = "SELECT * FROM " + table + " WHERE " + field + "= \'" + i + "\' ;"
+		queryresult = cur.execute(query)
+		output = output.extend(queryresult)
+		pkl(output, 'jar/' + n + 'randomsamples.pkl')
+		tocsv('output/' + n + 'randomsamples.csv')
+	return(output)
+
+def pickuniqueuser(cur, n, table, column, uniquelist):
+	for i in range(n):
+		query = "SELECT * from " + table + " WHERE " + column + " = \'" + i + "\' ;"
+		print(query)
 
 def tocsv(filename,data):
 	with open(filename,'w', newline='') as file:
@@ -71,26 +116,15 @@ def tocsv(filename,data):
 		except csv.Error as e:
 			print(e)
 
-def mkusrtbl(unqusr,cur):
-	for usr in unqusr:
-		query = "CREATE TABLE " + usr[0] + \
-		" AS SELECT * FROM auth WHERE srcusr = \'" + usr[0] + "\' LIMIT 10;"
-		print(query)
-		cur.execute(query)
-
-def cc(cur):
-	cur.close()
-
-def pickuniqueuser(cur, sample, table, column, uniquelist):
-	for i in range(sample):
-		query = "SELECT * from " + table + " WHERE " + column + " = \'" + i + "\' ;"
-		print(query)
-
-def pkl(cucumber, picklename):
+def pkl(cucumber, filename):
 	with open(picklename, 'wb') as output:
 		pickle.dump(cucumber, output, pickle.HIGHEST_PROTOCOL)
-		print("Pickle made. Filename = " + picklename)
+		print("Pickle made. Filename = " + filename)
 
+def unpkl(filename):
+	with open(filename, 'rb') as input:
+		cucumber = pickle.load(input)
+		return cucumber
 
 ## make some test variables
 x = range(10)
@@ -98,3 +132,4 @@ l = list(x)
 filename = 'woc11.csv'
 cur = startcursor()
 unqusr = [('U66',),('U2837',)]
+unqredteam = unpkl('jar/unqredteamusrs.pkl')
