@@ -5,7 +5,6 @@ import csv
 import psycopg2
 import pickle
 import random
-from more_itertools import unique_everseen
 
 #Connection information is stored in config file that is added to .gitignore
 from config.rdsconfig import host, rdsuser, rdspassword
@@ -80,26 +79,25 @@ def cc(cur):
 	cur.close()
 
 #Select n random unique values a table.
-def selectrandom(cur, n, unqlist, table, field):
+def pickrandom(cur, n, unqlist, table, field):
 	"""Select n unique values from a list.\
 	Then, query a specified field and table for the results.\
 	Saves a pkl and csv."""
 	sample = []
 	output = []
 	sample = random.sample(unqlist, n)
-	print("this is the tuple sample")
-	print(sample)
-	sample = ['x' for x in sample]
-	print("this is the comprende sample")
-	print(sample)
+	sample = [x[0] for x in sample]
 	for i in sample:
-		print(i)
 		query = "SELECT * FROM " + table + " WHERE " + field + "= \'" + i + "\' ;"
-		queryresult = cur.execute(query)
-		output = output.extend(queryresult)
-		pkl(output, 'jar/' + n + 'randomsamples.pkl')
-		tocsv('output/' + n + 'randomsamples.csv')
+		cur.execute(query)
+		queryresult = cur.fetchall()
+		output.extend(queryresult)
+	pkl(output, 'jar/' + str(n) + 'randomsamples.pkl')
+	tocsv('output/' + str(n) + 'randomsamples.csv', output)
 	return(output)
+
+def pickselect(cur,start, stop, unqlist, table, field):
+	print(cur)
 
 def pickuniqueuser(cur, n, table, column, uniquelist):
 	for i in range(n):
@@ -117,7 +115,7 @@ def tocsv(filename,data):
 			print(e)
 
 def pkl(cucumber, filename):
-	with open(picklename, 'wb') as output:
+	with open(filename, 'wb') as output:
 		pickle.dump(cucumber, output, pickle.HIGHEST_PROTOCOL)
 		print("Pickle made. Filename = " + filename)
 
