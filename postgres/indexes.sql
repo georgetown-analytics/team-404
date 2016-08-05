@@ -23,5 +23,9 @@ create index authdstuser on auth (dstuser);
 create index authsrcdomain on auth (srcdomain);
 create index authdstdomain on auth (dstdomain);
 */
-
+/*
 CREATE INDEX tstamp ON auth(srccomputer);
+*/
+CREATE INDEX tstamp on proc(tstamp);
+CREATE INDEX tstamp on flows(tstamp);
+CREATE INDEX tstamp on dns(tstamp);
