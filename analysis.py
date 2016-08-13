@@ -5,7 +5,12 @@ import csv
 import psycopg2
 import pickle
 import random
+from os import listdir
+import os
+from os.path import isfile, join
 
+from operator import itemgetter
+from hurry.filesize import size,si
 #Connection information is stored in config file that is added to .gitignore
 from config.rdsconfig import host, rdsuser, rdspassword
 
@@ -46,7 +51,7 @@ def unq(cur):
 	temp = cur.fetchall()
 	allusrs.extend(temp)
 	#unique = list(unique_everseen(allusrs))
-	unique = allusrs
+	unique = set(allusrs)
 	print("Unique users compiled and deduped.")
 	tocsv('uniqueusersfile.csv',unique)
 	pkl(unique, "jar/uniqueusers.pkl")
@@ -66,13 +71,19 @@ def queryalltbl(cur, tblList):
 	for i, tbl in tblList:
 		queries[i] = "SELECT "
 
-#Subset the auth table by user.
+#Subset the auth table by user.  Save to pickle on external harddrive.
 def mkusrtbl(unqusr,cur):
 	for usr in unqusr:
-		query = "CREATE TABLE " + usr[0] + \
-		" AS SELECT * FROM auth WHERE srcusr = \'" + usr[0] + "\' LIMIT 10;"
-		print(query)
-		cur.execute(query)
+		if os.path.isfile('/media/pcgeller/PHOTOS/' + usr[0]) == True:
+		#query = "CREATE TABLE " + usr[0] + "AS"\
+			print(usr[0] + ' File Exists')
+			continue
+		else:
+			query = "SELECT * FROM auth WHERE srcusr = \'" + usr[0] + "\' ;"
+			print(query)
+			cur.execute(query)
+			result = cur.fetchall()
+			pkl(result, os.path.abspath('/media/pcgeller/PHOTOS/' + usr[0]))
 
 #Close postgres connection
 def cc(cur):
@@ -124,10 +135,37 @@ def unpkl(filename):
 		cucumber = pickle.load(input)
 		return cucumber
 
+def mkfiledictionary(path):
+	"""Make dictionary of files and their byte size and readable size\
+	Sorted by their filesize in bytes."""
+	dictionary = {}
+	for f in listdir(path):
+		bytesize = os.path.getsize(join(path,f))
+		rablesize = size(bytesize)
+		#dictionary.update = ({bytesize: rablesize})
+		dictionary[f] = [bytesize, rablesize]
+		dictionary = sorted(dictionary, key=itemgetter(0))
+
+		#onlyfile = [f for f in listdir(path) if isfile(join(path,f))]
+
 ## make some test variables
 x = range(10)
 l = list(x)
 filename = 'woc11.csv'
 cur = startcursor()
 unqusr = [('U66',),('U2837',)]
+authheader = ""
+procheader = ""
+flowsheader = ""
+dnsheader = ""
+rtheader = ""
+authuniqueusersize = "26320"
 unqredteam = unpkl('jar/unqredteamusrs.pkl')
+uniqueusers = unpkl('jar/uniqueusers.pkl')
+lastvalue = "C23917"
+jarpath = '/media/pcgeller/PHOTOS'
+files = listdir(jarpath)
+
+#uniqueusers returned by unq() contains duplicates
+#KLUDGE to dedup so the sql queries don't need to run
+uniqueusers = list(set(uniqueusers))
