@@ -26,6 +26,14 @@ create index authdstdomain on auth (dstdomain);
 /*
 CREATE INDEX tstamp ON auth(srccomputer);
 */
-CREATE INDEX tstamp on proc(tstamp);
-CREATE INDEX tstamp on flows(tstamp);
-CREATE INDEX tstamp on dns(tstamp);
+/*
+CREATE INDEX proctstamp on proc(tstamp);
+CREATE INDEX flowststamp on flows(tstamp);
+CREATE INDEX dnststamp on dns(tstamp);
+*/
+CREATE INDEX authid on auth(id);
+CREATE INDEX typeauth on auth(authtype);
+CREATE INDEX logontype on auth(logontype);
+CREATE INDEX orientauth on auth(authorient);
+CREATE INDEX pfauth on auth(passfail);
+CREATE INDEX rtauth on auth(redteam);

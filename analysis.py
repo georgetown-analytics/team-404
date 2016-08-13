@@ -1,5 +1,6 @@
-##None of this code should be run from untrusted connections.
-##It is vulnerable to SQL Injection attacks.
+##!!!!!!!!!!!!!!!!!!!!!!!!!!!!This code should not be run from untrusted connections.!!!!!!!!!!!!
+##!!!!!!!!!!!!!!!!!!!!!!!!!!!!It is vulnerable to SQL Injection attacks.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 import csv
 import psycopg2
@@ -11,6 +12,7 @@ from config.rdsconfig import host, rdsuser, rdspassword
 
 #set up a cursor
 def startcursor():
+	try:
 		conn = psycopg2.connect(
 			host=host,
 			port="5432",
@@ -18,8 +20,10 @@ def startcursor():
 			user=rdsuser,
 			password=rdspassword
 		)
-		cur = conn.cursor()
-		return cur
+	except:
+		print ("\n_________CONNECTION FAILURE_________\n")
+	cur = conn.cursor()
+	return cur
 
 #get all of the table names
 def tblnames(cur):
@@ -123,6 +127,17 @@ def unpkl(filename):
 	with open(filename, 'rb') as input:
 		cucumber = pickle.load(input)
 		return cucumber
+
+class session
+	cur = cur
+	def define sessions
+		for each unique user select the time that authorient = logon and authtype = authmap
+		for each uniuqe user select the time that authorient = log off and authtype = authmap
+		all times between are session i for user
+
+
+for item in sessionlist;
+	build count and dummy variable stats
 
 ## make some test variables
 x = range(10)

@@ -1,15 +1,15 @@
 import psycopg2
-from auth_js import connection_string_js
+#from auth_js import connection_string_js
 
-def connect_db(connection_data):
-	try:
-		conn = psycopg2.connect(connection_data)
-	except:
-		print ("\n_________CONNECTION FAILURE_________\n")
-	cur = conn.cursor()
-	return cur
+# def connect_db(connection_data):
+# 	try:
+# 		conn = psycopg2.connect(connection_data)
+# 	except:
+# 		print ("\n_________CONNECTION FAILURE_________\n")
+# 	cur = conn.cursor()
+# 	return cur
 
-# This generates a list of lists. The sub-lists include three items: a number 1-180,
+This generates a list of lists. The sub-lists include three items: a number 1-180,
 # representing 180 consecutive 24/hr periods (this is six months), the
 # timestamps at the begining of the 24/hr period, and the timestamp at the end of the 24/hr period.
 def time_converter_day():
@@ -38,7 +38,7 @@ def time_converter_month():
 # SQL query to create new column in table, acepts arguments
 # for table name, column name, and data type. Can use this to insert day
 # and month columns for one or several tables.
-def insert_column(table,column,type):
+def insert_column(cur,table,column,type):
 	cur.execute("""ALTER TABLE %s ADD COLUMN %s %s""" % (table,column,type))
 
 # Update day and month column based on timestamps. This loops through the month_number list generated above, and generates queries to update the month column based on the calculated timestamp parameters.
@@ -55,8 +55,8 @@ def generate_table_by_select(table, month, new_table):
 
 def disconnect_db():
 	cur.close()
-	conn.close()
-	
+	connx.close()
+
 if __name__ == '__main__':
 	connect_db(connection_string_js)
 	time_converter_day()
