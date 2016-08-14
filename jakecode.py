@@ -9,7 +9,7 @@ import psycopg2
 # 	cur = conn.cursor()
 # 	return cur
 
-This generates a list of lists. The sub-lists include three items: a number 1-180,
+#This generates a list of lists. The sub-lists include three items: a number 1-180,
 # representing 180 consecutive 24/hr periods (this is six months), the
 # timestamps at the begining of the 24/hr period, and the timestamp at the end of the 24/hr period.
 def time_converter_day():

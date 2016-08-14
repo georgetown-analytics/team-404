@@ -139,7 +139,7 @@ def unpkl(filename):
 		cucumber = pickle.load(input)
 		return cucumber
 
-<<<<<<< HEAD
+
 class session
 	cur = cur
 	def define sessions
@@ -147,23 +147,19 @@ class session
 		for each uniuqe user select the time that authorient = log off and authtype = authmap
 		all times between are session i for user
 
+def modata(usr, ):
+	for usr in uniqueusers:
+		cur.execute("SELECT * FROM ")
 
 for item in sessionlist;
 	build count and dummy variable stats
-=======
+
 def mkfiledictionary(path):
 	"""Make dictionary of files and their byte size and readable size\
 	Sorted by their filesize in bytes."""
-	dictionary = {}
-	for f in listdir(path):
-		bytesize = os.path.getsize(join(path,f))
-		rablesize = size(bytesize)
-		#dictionary.update = ({bytesize: rablesize})
-		dictionary[f] = [bytesize, rablesize]
-		dictionary = sorted(dictionary, key=itemgetter(0))
-
-		#onlyfile = [f for f in listdir(path) if isfile(join(path,f))]
->>>>>>> e5232186439d54a864fb634374c042d468fe54eb
+	filelist = [f for f in listdir(path) if isfile(join(path,f))]
+	dict = {f: [os.path.getsize(join(path,f)), size(os.path.getsize(join(path,f)))] for f in filelist}
+	dict = sorted(dict, key = itemgetter(0))
 
 ## make some test variables
 x = range(10)
