@@ -135,18 +135,25 @@ def unpkl(filename):
 		cucumber = pickle.load(input)
 		return cucumber
 
+def labelallsessions(filelist):
+	for f in filelist:
+		usrrecorddict = []
+		authdata = sorted(unpkl(join(jarpath,f)), key=itemgetter(1))
+		cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
+		header = cur.fetchall()
+		for record in authdata:
+			recorddict = {k: v for k, v in zip(header,record)}
+			print(recorddict)
+			usrrecorddict.extend(recorddict)
+			print(usrrecorddict)
+
+
+# unpkl(os.path(join(jarpath,unqusr[1])))
 def mkfiledictionary(path):
 	"""Make dictionary of files and their byte size and readable size\
 	Sorted by their filesize in bytes."""
-	dictionary = {}
-	for f in listdir(path):
-		bytesize = os.path.getsize(join(path,f))
-		rablesize = size(bytesize)
-		#dictionary.update = ({bytesize: rablesize})
-		dictionary[f] = [bytesize, rablesize]
-		dictionary = sorted(dictionary, key=itemgetter(0))
-
-		#onlyfile = [f for f in listdir(path) if isfile(join(path,f))]
+	dictionary = {f: [os.path.getsize(join(jarpath, f)), size(os.path.getsize(join(jarpath,f)))] for f in listdir(jarpath)}
+	dictionary = sorted(dictionary, key=itemgetter(0))
 
 ## make some test variables
 x = range(10)
@@ -154,18 +161,27 @@ l = list(x)
 filename = 'woc11.csv'
 cur = startcursor()
 unqusr = [('U66',),('U2837',)]
-authheader = ""
-procheader = ""
-flowsheader = ""
-dnsheader = ""
-rtheader = ""
+
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
+authheader = cur.fetchall()
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'proc'")
+procheader = cur.fetchall()
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'flows'")
+flowsheader = cur.fetchall()
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'dns'")
+dnsheader = cur.fetchall()
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'redteam'")
+redteamheader = cur.fetchall()
+
+
 authuniqueusersize = "26320"
-unqredteam = unpkl('jar/unqredteamusrs.pkl')
 uniqueusers = unpkl('jar/uniqueusers.pkl')
 lastvalue = "C23917"
 jarpath = '/media/pcgeller/PHOTOS'
 files = listdir(jarpath)
-
+# onlyfile = [f for f in listdir(jarpath) if isfile(join(jarpath,f))]
+# d = {f: [os.path.getsize(join(jarpath, f)), size(os.path.getsize(join(jarpath,f)))] for f in listdir(jarpath)}
 #uniqueusers returned by unq() contains duplicates
 #KLUDGE to dedup so the sql queries don't need to run
 uniqueusers = list(set(uniqueusers))
+sampleusr = unpkl('jar/U8556')
