@@ -1,5 +1,6 @@
-##None of this code should be run from untrusted connections.
-##It is vulnerable to SQL Injection attacks.
+##!!!!!!!!!!!!!!!!!!!!!!!!!!!!This code should not be run from untrusted connections.!!!!!!!!!!!!
+##!!!!!!!!!!!!!!!!!!!!!!!!!!!!It is vulnerable to SQL Injection attacks.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 import csv
 import psycopg2
@@ -16,6 +17,7 @@ from config.rdsconfig import host, rdsuser, rdspassword
 
 #set up a cursor
 def startcursor():
+	try:
 		conn = psycopg2.connect(
 			host=host,
 			port="5432",
@@ -23,8 +25,10 @@ def startcursor():
 			user=rdsuser,
 			password=rdspassword
 		)
-		cur = conn.cursor()
-		return cur
+	except:
+		print ("\n_________CONNECTION FAILURE_________\n")
+	cur = conn.cursor()
+	return cur
 
 #get all of the table names
 def tblnames(cur):
@@ -154,6 +158,28 @@ def mkfiledictionary(path):
 	Sorted by their filesize in bytes."""
 	dictionary = {f: [os.path.getsize(join(jarpath, f)), size(os.path.getsize(join(jarpath,f)))] for f in listdir(jarpath)}
 	dictionary = sorted(dictionary, key=itemgetter(0))
+
+class session
+	cur = cur
+	def define sessions
+		for each unique user select the time that authorient = logon and authtype = authmap
+		for each uniuqe user select the time that authorient = log off and authtype = authmap
+		all times between are session i for user
+
+def modata(usr, ):
+	for usr in uniqueusers:
+		cur.execute("SELECT * FROM ")
+
+for item in sessionlist;
+	build count and dummy variable stats
+
+def mkfiledictionary(path):
+	"""Make dictionary of files and their byte size and readable size\
+	Sorted by their filesize in bytes."""
+	filelist = [f for f in listdir(path) if isfile(join(path,f))]
+	dict = {f: [os.path.getsize(join(path,f)), size(os.path.getsize(join(path,f)))] for f in filelist}
+	dict = sorted(dict, key = itemgetter(0))
+>>>>>>> 77368fabdbd58e376637b7b8a26818bef5a65ec6
 
 ## make some test variables
 x = range(10)
