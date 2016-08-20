@@ -140,19 +140,19 @@ def unpkl(filename):
 		return cucumber
 
 
-class session
-	cur = cur
-	def define sessions
-		for each unique user select the time that authorient = logon and authtype = authmap
-		for each uniuqe user select the time that authorient = log off and authtype = authmap
-		all times between are session i for user
+# class session
+# 	cur = cur
+# 	def define sessions
+# 		for each unique user select the time that authorient = logon and authtype = authmap
+# 		for each uniuqe user select the time that authorient = log off and authtype = authmap
+# 		all times between are session i for user
 
 def modata(usr, ):
 	for usr in uniqueusers:
 		cur.execute("SELECT * FROM ")
 
-for item in sessionlist;
-	build count and dummy variable stats
+# for item in sessionlist;
+# 	build count and dummy variable stats
 
 def mkfiledictionary(path):
 	"""Make dictionary of files and their byte size and readable size\
@@ -176,7 +176,7 @@ authuniqueusersize = "26320"
 unqredteam = unpkl('jar/unqredteamusrs.pkl')
 uniqueusers = unpkl('jar/uniqueusers.pkl')
 lastvalue = "C23917"
-jarpath = '/media/pcgeller/PHOTOS'
+#jarpath = '/media/pcgeller/PHOTOS'
 files = listdir(jarpath)
 
 #uniqueusers returned by unq() contains duplicates
