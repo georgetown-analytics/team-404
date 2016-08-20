@@ -2,3 +2,4 @@ data
 accounts.sql
 /config/rdsconfig.py
 /jar
+*ipynb

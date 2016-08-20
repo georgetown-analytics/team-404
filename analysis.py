@@ -6,10 +6,13 @@ import csv
 import psycopg2
 import pickle
 import random
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from os import listdir
 import os
 from os.path import isfile, join
-
+from os import listdir
 from operator import itemgetter
 from hurry.filesize import size,si
 #Connection information is stored in config file that is added to .gitignore
@@ -140,6 +143,20 @@ def unpkl(filename):
 		return cucumber
 
 
+def labelallsessions(filelist):
+	for f in filelist:
+		usrrecorddict = []
+		authdata = sorted(unpkl(join(jarpath,f)), key=itemgetter(1))
+		cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
+		header = cur.fetchall()
+		header = [x[0] for x in header]
+		for record in authdata:
+			recorddict = {k: v for k, v in zip(header,record)}
+			print(recorddict)
+			usrrecorddict.extend(recorddict)
+			print(usrrecorddict)
+
+
 # class session
 # 	cur = cur
 # 	def define sessions
@@ -151,6 +168,13 @@ def modata(usr, ):
 	for usr in uniqueusers:
 		cur.execute("SELECT * FROM ")
 
+# # 		for each uniuqe user select the time that authorient = log off and authtype = authmap
+# # 		all times between are session i for user
+#
+# def modata(usr, ):
+# 	for usr in uniqueusers:
+# 		cur.execute("SELECT * FROM ")
+#
 # for item in sessionlist;
 # 	build count and dummy variable stats
 
@@ -167,18 +191,36 @@ l = list(x)
 filename = 'woc11.csv'
 cur = startcursor()
 unqusr = [('U66',),('U2837',)]
-authheader = ""
-procheader = ""
-flowsheader = ""
-dnsheader = ""
-rtheader = ""
+
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
+authheader = cur.fetchall()
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'proc'")
+procheader = cur.fetchall()
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'flows'")
+flowsheader = cur.fetchall()
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'dns'")
+dnsheader = cur.fetchall()
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'redteam'")
+redteamheader = cur.fetchall()
+
+
 authuniqueusersize = "26320"
-unqredteam = unpkl('jar/unqredteamusrs.pkl')
 uniqueusers = unpkl('jar/uniqueusers.pkl')
 lastvalue = "C23917"
 #jarpath = '/media/pcgeller/PHOTOS'
 files = listdir(jarpath)
-
+# onlyfile = [f for f in listdir(jarpath) if isfile(join(jarpath,f))]
+# d = {f: [os.path.getsize(join(jarpath, f)), size(os.path.getsize(join(jarpath,f)))] for f in listdir(jarpath)}
 #uniqueusers returned by unq() contains duplicates
 #KLUDGE to dedup so the sql queries don't need to run
 uniqueusers = list(set(uniqueusers))
+sampleusr = unpkl('jar/U8556')
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
+header = cur.fetchall()
+header = [x[0] for x in header]
+c1 = sorted(unpkl(join(jarpath,files[1])), key=itemgetter(1))
+df = pd.DataFrame(c1, columns = header)
+
+am = df.loc[df['authorient'] == "AuthMap"]
+colcounts = df.groupby('authorient').size()
+colcountsalt = df.authorient.value_counts()
