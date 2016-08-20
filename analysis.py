@@ -6,10 +6,13 @@ import csv
 import psycopg2
 import pickle
 import random
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from os import listdir
 import os
 from os.path import isfile, join
-
+from os import listdir
 from operator import itemgetter
 from hurry.filesize import size,si
 #Connection information is stored in config file that is added to .gitignore
@@ -145,33 +148,26 @@ def labelallsessions(filelist):
 		authdata = sorted(unpkl(join(jarpath,f)), key=itemgetter(1))
 		cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
 		header = cur.fetchall()
+		header = [x[0] for x in header]
 		for record in authdata:
 			recorddict = {k: v for k, v in zip(header,record)}
 			print(recorddict)
 			usrrecorddict.extend(recorddict)
 			print(usrrecorddict)
 
-
-# unpkl(os.path(join(jarpath,unqusr[1])))
-def mkfiledictionary(path):
-	"""Make dictionary of files and their byte size and readable size\
-	Sorted by their filesize in bytes."""
-	dictionary = {f: [os.path.getsize(join(jarpath, f)), size(os.path.getsize(join(jarpath,f)))] for f in listdir(jarpath)}
-	dictionary = sorted(dictionary, key=itemgetter(0))
-
-class session
-	cur = cur
-	def define sessions
-		for each unique user select the time that authorient = logon and authtype = authmap
-		for each uniuqe user select the time that authorient = log off and authtype = authmap
-		all times between are session i for user
-
-def modata(usr, ):
-	for usr in uniqueusers:
-		cur.execute("SELECT * FROM ")
-
-for item in sessionlist;
-	build count and dummy variable stats
+# class session
+# 	cur = cur
+# 	def define sessions
+# 		for each unique user select the time that authorient = logon and authtype = authmap
+# # 		for each uniuqe user select the time that authorient = log off and authtype = authmap
+# # 		all times between are session i for user
+#
+# def modata(usr, ):
+# 	for usr in uniqueusers:
+# 		cur.execute("SELECT * FROM ")
+#
+# for item in sessionlist;
+# 	build count and dummy variable stats
 
 def mkfiledictionary(path):
 	"""Make dictionary of files and their byte size and readable size\
@@ -179,7 +175,6 @@ def mkfiledictionary(path):
 	filelist = [f for f in listdir(path) if isfile(join(path,f))]
 	dict = {f: [os.path.getsize(join(path,f)), size(os.path.getsize(join(path,f)))] for f in filelist}
 	dict = sorted(dict, key = itemgetter(0))
->>>>>>> 77368fabdbd58e376637b7b8a26818bef5a65ec6
 
 ## make some test variables
 x = range(10)
@@ -211,3 +206,12 @@ files = listdir(jarpath)
 #KLUDGE to dedup so the sql queries don't need to run
 uniqueusers = list(set(uniqueusers))
 sampleusr = unpkl('jar/U8556')
+cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
+header = cur.fetchall()
+header = [x[0] for x in header]
+c1 = sorted(unpkl(join(jarpath,files[1])), key=itemgetter(1))
+df = pd.DataFrame(c1, columns = header)
+
+am = df.loc[df['authorient'] == "AuthMap"]
+colcounts = df.groupby('authorient').size()
+colcountsalt = df.authorient.value_counts()
