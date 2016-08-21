@@ -9,8 +9,6 @@ import random
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-import pylab
 from os import listdir
 import os
 from os.path import isfile, join
@@ -144,7 +142,6 @@ def unpkl(filename):
 		cucumber = pickle.load(input)
 		return cucumber
 
-
 def labelallsessions(filelist):
 	for f in filelist:
 		usrrecorddict = []
@@ -158,7 +155,6 @@ def labelallsessions(filelist):
 			usrrecorddict.extend(recorddict)
 			print(usrrecorddict)
 
-
 # class session
 # 	cur = cur
 # 	def define sessions
@@ -168,8 +164,7 @@ def labelallsessions(filelist):
 
 def modata(usr, ):
 	for usr in uniqueusers:
-		cur.execute("SELECT * FROM ")
-
+		cur.execute("SELECT * FROM "
 # # 		for each uniuqe user select the time that authorient = log off and authtype = authmap
 # # 		all times between are session i for user
 #
@@ -177,6 +172,7 @@ def modata(usr, ):
 # 	for usr in uniqueusers:
 # 		cur.execute("SELECT * FROM ")
 #
+>>>>>>> fd252bdf0c81f9b77df944247b07a14f395c6963
 # for item in sessionlist;
 # 	build count and dummy variable stats
 
@@ -207,57 +203,22 @@ redteamheader = cur.fetchall()
 
 
 authuniqueusersize = "26320"
-#uniqueusers = unpkl('jar/uniqueusers.pkl')
+uniqueusers = unpkl('jar/uniqueusers.pkl')
 lastvalue = "C23917"
 #jarpath = '/media/pcgeller/PHOTOS'
-#files = listdir(jarpath)
+files = listdir(jarpath)
 # onlyfile = [f for f in listdir(jarpath) if isfile(join(jarpath,f))]
 # d = {f: [os.path.getsize(join(jarpath, f)), size(os.path.getsize(join(jarpath,f)))] for f in listdir(jarpath)}
 #uniqueusers returned by unq() contains duplicates
 #KLUDGE to dedup so the sql queries don't need to run
-#uniqueusers = list(set(uniqueusers))
-#sampleusr = unpkl('jar/U8556')
+uniqueusers = list(set(uniqueusers))
+sampleusr = unpkl('jar/U8556')
 cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
 header = cur.fetchall()
 header = [x[0] for x in header]
-# c1 = sorted(unpkl(join(jarpath,files[1])), key=itemgetter(1))
-# df = pd.DataFrame(c1, columns = header)
-#
-# am = df.loc[df['authorient'] == "AuthMap"]
-# colcounts = df.groupby('authorient').size()
-# colcountsalt = df.authorient.value_counts()
-filelist = ["U8946"]
-def labelsessions(filelist, path, header):
-	# cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
-	# header = cur.fetchall()
-	for f in filelist:
-		data = sorted(unpkl(join(path,f)), key=itemgetter(1))
-		df = pd.DataFrame(data, columns = header)
-		df.sort(columns = 'tstamp')
-		authdata = df.loc[df['authorient'] == "AuthMap"]
-		tstamplist = authdata['tstamp']
-		tstamplist = sorted(tstamplist)
-		i = 0
-		print("Session label initialized")
-		for s in tstamplist:
-			#print(s)
-			if i == 0:
-				print("first item")
-				print(i)
-				sub = df[(df.tstamp < tstamplist[i])]
-				df.loc[sub.index,'session'] = i
-				i += 1
-			elif i >= 1 and i < len(tstamplist) - 1:
-				print(i)
-				print(type(i))
-				print( i >= 1 and i < len(tstamplist) - 1)
-				sub = df[(df.tstamp >= tstamplist[i -1]) & (df.tstamp < tstamplist[i])]
-				df.loc[sub.index,'session'] = i
-				i += 1
-			elif i == len(tstamplist) - 1:
-				print("on last item")
-				sub = df[(df.tstamp >= tstamplist[i])]
-				df.loc[sub.index,'session'] = i
-				print(tstamplist[i])
-				print("Filelist looped")
-		#return(df)
+c1 = sorted(unpkl(join(jarpath,files[1])), key=itemgetter(1))
+df = pd.DataFrame(c1, columns = header)
+
+am = df.loc[df['authorient'] == "AuthMap"]
+colcounts = df.groupby('authorient').size()
+colcountsalt = df.authorient.value_counts()

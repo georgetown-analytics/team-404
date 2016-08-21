@@ -14,3 +14,10 @@ def mkfiledictionary(path):
                 #dictionary.update = ({bytesize: rablesize})
                 dictionary[f] = [bytesize, rablesize]
                 dictionary = sorted(dictionary, key=itemgetter(0))
+
+
+for i in len(auth):
+    cur.execute(SELECT id = i )
+    take tstamp / 86400 = day
+    take mod(day) = hours in seconds
+    INSERT day INTO day field
