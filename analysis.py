@@ -164,18 +164,10 @@ def labelallsessions(filelist):
 # 	def define sessions
 # 		for each unique user select the time that authorient = logon and authtype = authmap
 # 		for each uniuqe user select the time that authorient = log off and authtype = authmap
-# 		all times between are session i for user
-
-def modata(usr, ):
-	for usr in uniqueusers:
-		cur.execute("SELECT * FROM ")
-
+# 		all times between are session i for use
 # # 		for each uniuqe user select the time that authorient = log off and authtype = authmap
 # # 		all times between are session i for user
-#
-# def modata(usr, ):
-# 	for usr in uniqueusers:
-# 		cur.execute("SELECT * FROM ")
+
 #
 # for item in sessionlist;
 # 	build count and dummy variable stats
