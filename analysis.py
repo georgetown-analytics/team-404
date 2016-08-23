@@ -227,7 +227,30 @@ header = [x[0] for x in header]
 # colcounts = df.groupby('authorient').size()
 # colcountsalt = df.authorient.value_counts()
 filelist = ["U8946"]
-def labelsessions(filelist, path, header):
+def labelsessions(df,tstamplist):
+	for s in tstamplist:
+		#print(s)
+		if i == 0:
+			print("first item")
+			print(i)
+			sub = df[(df.tstamp < tstamplist[i])]
+			df.loc[sub.index,'session'] = i
+			i += 1
+		elif i >= 1 and i < len(tstamplist) - 1:
+			print(i)
+			print(type(i))
+			print( i >= 1 and i < len(tstamplist) - 1)
+			sub = df[(df.tstamp >= tstamplist[i -1]) & (df.tstamp < tstamplist[i])]
+			df.loc[sub.index,'session'] = i
+			i += 1
+		elif i == len(tstamplist) - 1:
+			print("on last item")
+			sub = df[(df.tstamp >= tstamplist[i])]
+			df.loc[sub.index,'session'] = i
+			print(tstamplist[i])
+			print("Filelist looped")
+
+def labelauthsessions(filelist, path, header):
 	# cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
 	# header = cur.fetchall()
 	for f in filelist:
@@ -261,3 +284,14 @@ def labelsessions(filelist, path, header):
 				print(tstamplist[i])
 				print("Filelist looped")
 		#return(df)
+
+def addproc(usr, cur, tstamplist):
+	i = 0
+	for s in tstamplist:
+
+
+def addflows(cur):
+	print("Do work")
+
+def adddns(cur):
+	print("Do Work")
