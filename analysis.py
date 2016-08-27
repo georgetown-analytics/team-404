@@ -22,7 +22,7 @@ import csv
 import psycopg2
 import pickle
 
-def startcursor():
+def startconnection():
 	try:
 		conn = psycopg2.connect(
 			host=host,
@@ -33,8 +33,8 @@ def startcursor():
 		)
 	except:
 		print ("\n_________CONNECTION FAILURE_________\n")
-	cur = conn.cursor()
-	return cur
+	return(conn)
+
 
 def tocsv(filename,data):
 	with open(filename,'w', newline='') as file:
@@ -148,7 +148,8 @@ def mkfiledictionary(path):
 	Sorted by their filesize in bytes."""
 	filelist = [f for f in listdir(path) if isfile(join(path,f))]
 	dict = {f: [os.path.getsize(join(path,f)), size(os.path.getsize(join(path,f)))] for f in filelist}
-	dict = sorted(dict, key = itemgetter(0))
+	#dict = sorted(dict, key = itemgetter(0))
+	return(dict)
 
 def labelsessions(df,tstamplist):
 	"""Label the sessions for a unique user or computer."""
@@ -250,7 +251,10 @@ def getheaders(tablelist):
 	return(headers)
 
 ####Handy Variables
-cur = startcursor()
+#cur = startcursor()
+conn = startconnection()
+cur = conn.cursor()
+cur2 = conn.cursor('serverside')
 #KLUDGE to dedup so the sql queries don't need to run
 #uniqueusers returned by unq() contains duplicates
 uniqueusers = t2l(unpkl('jar/uniqueusers.pkl'))
@@ -265,12 +269,12 @@ tblnames = alltblnames[:-1]
 #tblnamesNOAUTH = tblnames.remove('auth')
 headers = getheaders(tblnames)
 
-authfiles = listdir(filepaths['auth'])
-authfiles.remove('$RECYCLE.BIN')
+# authfiles = listdir(filepaths['auth'])
+# authfiles.remove('$RECYCLE.BIN')
 
 ##Make some dummy variables
 authuniqueusersize = "26320"
-sampleusr = unpkl('jar/U8556')
+# sampleusr = unpkl('jar/U8556')
 lastvalue = "C23917"
 jarpath = './jar'
 filelist = ["U8946"]
