@@ -1,10 +1,6 @@
 ##!!!!!!!!!!!!!!!!!!!!!!!!!!!!This code should not be run from untrusted connections.!!!!!!!!!!!!
 ##!!!!!!!!!!!!!!!!!!!!!!!!!!!!It is vulnerable to SQL Injection attacks.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
-import csv
-import psycopg2
-import pickle
 import random
 import pandas as pd
 import numpy as np
@@ -19,8 +15,13 @@ from operator import itemgetter
 from hurry.filesize import size,si
 #Connection information is stored in config file that is added to .gitignore
 from config.rdsconfig import host, rdsuser, rdspassword
-
+from helperfunctions import *
 #set up a cursor
+
+import csv
+import psycopg2
+import pickle
+
 def startcursor():
 	try:
 		conn = psycopg2.connect(
@@ -35,16 +36,39 @@ def startcursor():
 	cur = conn.cursor()
 	return cur
 
+def tocsv(filename,data):
+	with open(filename,'w', newline='') as file:
+		writer = csv.writer(file)
+		try:
+			for row in data:
+				writer.writerow([row])
+			print("File saved.")
+		except csv.Error as e:
+			print(e)
+
+def pkl(cucumber, filename):
+	with open(filename, 'wb') as output:
+		pickle.dump(cucumber, output, pickle.HIGHEST_PROTOCOL)
+		print("Pickle made. Filename = " + filename)
+
+def unpkl(filename):
+	with open(filename, 'rb') as input:
+		cucumber = pickle.load(input)
+		return cucumber
+
+#Close postgres connection
+def cc(cur):
+	cur.close()
+
 #get all of the table names
-def tblnames(cur):
+def gettblnames(cur):
 	cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';")
 	tblList = cur.fetchall()
 	return tblList
 
-#Make a list of unique users (also includes some source computers).  We need to decide how we define a 'user'
-##and if we remove the computers.
-
 def unq(cur):
+	"""Gets a unique list of usrs and comps from all tables
+	Doesn't dedup correctly.  See fix and end"""
 	cur.execute("SELECT DISTINCT comp FROM proc;")
 	allusrs = cur.fetchall()
 
@@ -94,9 +118,6 @@ def mkusrtbl(unqusr,cur):
 			result = cur.fetchall()
 			pkl(result, os.path.abspath('/media/pcgeller/PHOTOS/' + usr[0]))
 
-#Close postgres connection
-def cc(cur):
-	cur.close()
 
 #Select n random unique values a table.
 def pickrandom(cur, n, unqlist, table, field):
@@ -116,61 +137,11 @@ def pickrandom(cur, n, unqlist, table, field):
 	tocsv('output/' + str(n) + 'randomsamples.csv', output)
 	return(output)
 
-def pickselect(cur,start, stop, unqlist, table, field):
-	print(cur)
-
 def pickuniqueuser(cur, n, table, column, uniquelist):
+	"""pick a unique user from the database"""
 	for i in range(n):
 		query = "SELECT * from " + table + " WHERE " + column + " = \'" + i + "\' ;"
 		print(query)
-
-def tocsv(filename,data):
-	with open(filename,'w', newline='') as file:
-		writer = csv.writer(file)
-		try:
-			for row in data:
-				writer.writerow([row])
-			print("File saved.")
-		except csv.Error as e:
-			print(e)
-
-def pkl(cucumber, filename):
-	with open(filename, 'wb') as output:
-		pickle.dump(cucumber, output, pickle.HIGHEST_PROTOCOL)
-		print("Pickle made. Filename = " + filename)
-
-def unpkl(filename):
-	with open(filename, 'rb') as input:
-		cucumber = pickle.load(input)
-		return cucumber
-
-
-def labelallsessions(filelist):
-	for f in filelist:
-		usrrecorddict = []
-		authdata = sorted(unpkl(join(jarpath,f)), key=itemgetter(1))
-		cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
-		header = cur.fetchall()
-		header = [x[0] for x in header]
-		for record in authdata:
-			recorddict = {k: v for k, v in zip(header,record)}
-			print(recorddict)
-			usrrecorddict.extend(recorddict)
-			print(usrrecorddict)
-
-
-# class session
-# 	cur = cur
-# 	def define sessions
-# 		for each unique user select the time that authorient = logon and authtype = authmap
-# 		for each uniuqe user select the time that authorient = log off and authtype = authmap
-# 		all times between are session i for use
-# # 		for each uniuqe user select the time that authorient = log off and authtype = authmap
-# # 		all times between are session i for user
-
-#
-# for item in sessionlist;
-# 	build count and dummy variable stats
 
 def mkfiledictionary(path):
 	"""Make dictionary of files and their byte size and readable size\
@@ -179,47 +150,9 @@ def mkfiledictionary(path):
 	dict = {f: [os.path.getsize(join(path,f)), size(os.path.getsize(join(path,f)))] for f in filelist}
 	dict = sorted(dict, key = itemgetter(0))
 
-## make some test variables
-x = range(10)
-l = list(x)
-filename = 'woc11.csv'
-cur = startcursor()
-unqusr = [('U66',),('U2837',)]
-
-cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
-authheader = cur.fetchall()
-cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'proc'")
-procheader = cur.fetchall()
-cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'flows'")
-flowsheader = cur.fetchall()
-cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'dns'")
-dnsheader = cur.fetchall()
-cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'redteam'")
-redteamheader = cur.fetchall()
-
-
-authuniqueusersize = "26320"
-#uniqueusers = unpkl('jar/uniqueusers.pkl')
-lastvalue = "C23917"
-#jarpath = '/media/pcgeller/PHOTOS'
-#files = listdir(jarpath)
-# onlyfile = [f for f in listdir(jarpath) if isfile(join(jarpath,f))]
-# d = {f: [os.path.getsize(join(jarpath, f)), size(os.path.getsize(join(jarpath,f)))] for f in listdir(jarpath)}
-#uniqueusers returned by unq() contains duplicates
-#KLUDGE to dedup so the sql queries don't need to run
-#uniqueusers = list(set(uniqueusers))
-#sampleusr = unpkl('jar/U8556')
-cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
-header = cur.fetchall()
-header = [x[0] for x in header]
-# c1 = sorted(unpkl(join(jarpath,files[1])), key=itemgetter(1))
-# df = pd.DataFrame(c1, columns = header)
-#
-# am = df.loc[df['authorient'] == "AuthMap"]
-# colcounts = df.groupby('authorient').size()
-# colcountsalt = df.authorient.value_counts()
-filelist = ["U8946"]
 def labelsessions(df,tstamplist):
+	"""Label the sessions for a unique user or computer."""
+	i = 0
 	for s in tstamplist:
 		#print(s)
 		if i == 0:
@@ -242,48 +175,115 @@ def labelsessions(df,tstamplist):
 			print(tstamplist[i])
 			print("Filelist looped")
 
-def labelauthsessions(filelist, path, header):
-	# cur.execute("SELECT column_name from information_schema.columns WHERE table_name = 'auth'")
-	# header = cur.fetchall()
+def labelNONAUTHsessions(tblnames, headerdict ,filepathdict, tstampdictionary):
+	for t in tblnames:
+		filepaths = "test"
+
+
+def labelauthsessions(filelist, header, openpath, savepath):
+	"""Open unique user and computer pickle from auth table.
+	Read file as dataframe.  Loop through and extract AuthMap events and
+	the timestamp they occured. Store tstamps in dictionary keyed on unique usr/comp
+	Pickle dataframe. <- worth it?"""
+	tstampdict = {}
 	for f in filelist:
-		data = sorted(unpkl(join(path,f)), key=itemgetter(1))
+		data = sorted(unpkl(join(openpath,f)), key=itemgetter(1))
 		df = pd.DataFrame(data, columns = header)
 		df.sort(columns = 'tstamp')
 		authdata = df.loc[df['authorient'] == "AuthMap"]
 		tstamplist = authdata['tstamp']
 		tstamplist = sorted(tstamplist)
-		i = 0
-		print("Session label initialized")
-		for s in tstamplist:
-			#print(s)
-			if i == 0:
-				print("first item")
-				print(i)
-				sub = df[(df.tstamp < tstamplist[i])]
-				df.loc[sub.index,'session'] = i
-				i += 1
-			elif i >= 1 and i < len(tstamplist) - 1:
-				print(i)
-				print(type(i))
-				print( i >= 1 and i < len(tstamplist) - 1)
-				sub = df[(df.tstamp >= tstamplist[i -1]) & (df.tstamp < tstamplist[i])]
-				df.loc[sub.index,'session'] = i
-				i += 1
-			elif i == len(tstamplist) - 1:
-				print("on last item")
-				sub = df[(df.tstamp >= tstamplist[i])]
-				df.loc[sub.index,'session'] = i
-				print(tstamplist[i])
-				print("Filelist looped")
-		#return(df)
+		tstampdict[f] = tstamplist
+		labelsessions(df, tstamplist)
+		pkl(df, os.path.abspath(savepath + f + '.pkl'))
+	return(tstampdict)
 
-def addproc(usr, cur, tstamplist):
-	i = 0
-	for s in tstamplist:
+def splittable(unqusrlist, table,cur, fieldname='usr', savepath='/media/pcgeller/SharedDrive/weirdo/'):
+	"""Split a remote table by a fieldname.
+	Save as a pickle at ./table/uniquefieldname"""
+	for usr in unqusrlist:
+		savelocation = os.path.abspath(savepath + table + '/' + usr[0] + table + '.pkl')
+		if os.path.isfile(savelocation) == True:
+			print(usr[0] + ' File Exists')
+			continue
+		else:
+			print("Getting: " + usr[0])
+			cur.execute("SELECT * FROM %s WHERE %s = '%s'" % (table, fieldname, usr[0]))
+			result = cur.fetchall()
+			pkl(result, os.path.abspath(savelocation))
 
+##!!!!!Kludge before of messedup auth names
+def splitauthtable(unqusrlist, table,cur, savepath, fieldname='usr',):
+	"""Split a remote table by a fieldname.
+	Save as a pickle at ./table/uniquefieldname"""
+	for usr in unqusrlist:
+		savelocation = os.path.abspath(savepath + '/' + usr[0])
+		if os.path.isfile(savelocation) == True:
+			print(usr[0] + ' File Exists')
+			continue
+		else:
+			print("Getting: " + usr[0])
+			cur.execute("SELECT * FROM %s WHERE %s = '%s'" % (table, fieldname, usr[0]))
+			result = cur.fetchall()
+			pkl(result, os.path.abspath(savelocation))
 
 def addflows(cur):
 	print("Do work")
 
 def adddns(cur):
 	print("Do Work")
+
+def t2l(tuple):
+	'''converts a list of tuples to a list'''
+	list = [x[0] for x in tuple]
+	return(list)
+
+#headers = getheaders(tblnames)
+
+def getheaders(tablelist):
+	headers = {}
+	for t in tablelist:
+		cur.execute("SELECT column_name from information_schema.columns WHERE \
+		table_name = '%s'" % (t))
+
+		headers[t]= t2l(cur.fetchall())
+	return(headers)
+
+####Handy Variables
+cur = startcursor()
+#KLUDGE to dedup so the sql queries don't need to run
+#uniqueusers returned by unq() contains duplicates
+uniqueusers = t2l(unpkl('jar/uniqueusers.pkl'))
+uniqueusers = list(set(uniqueusers))
+
+filepaths = {"auth":'/media/pcgeller/PHOTOS', "flows":'/media/pcgeller/SharedDrive/weirdo', \
+			"redteam":'/media/pcgeller/SharedDrive/weirdo',"proc":'/media/pcgeller/SharedDrive/weirdo', \
+			"dns":'/media/pcgeller/SharedDrive/weirdo'}
+
+alltblnames = t2l(gettblnames(cur))
+tblnames = alltblnames[:-1]
+#tblnamesNOAUTH = tblnames.remove('auth')
+headers = getheaders(tblnames)
+
+authfiles = listdir(filepaths['auth'])
+authfiles.remove('$RECYCLE.BIN')
+
+##Make some dummy variables
+authuniqueusersize = "26320"
+sampleusr = unpkl('jar/U8556')
+lastvalue = "C23917"
+jarpath = './jar'
+filelist = ["U8946"]
+x = range(10)
+l = list(x)
+filename = 'woc11.csv'
+unqusr = [('U66',),('U2837',)]
+
+####Handy Code
+# onlyfile = [f for f in listdir(authfilepath) if isfile(join(authfilepath,f))]
+# d = {f: [os.path.getsize(join(authfilepath, f)), size(os.path.getsize(join(authfilepath,f)))] for f in listdir(authfilepath)}
+# c1 = sorted(unpkl(join(authfilepath,authfiles[1])), key=itemgetter(1))
+# df = pd.DataFrame(c1, columns = header)
+# #am = df.loc[df['authorient'] == "AuthMap"]
+# colcounts = df.groupby('authorient').size()
+# colcountsalt = df.authorient.value_counts()
