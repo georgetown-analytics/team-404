@@ -22,7 +22,7 @@ import csv
 import psycopg2
 import pickle
 
-def startcursor():
+def startconn():
 	try:
 		conn = psycopg2.connect(
 			host=host,
@@ -33,8 +33,7 @@ def startcursor():
 		)
 	except:
 		print ("\n_________CONNECTION FAILURE_________\n")
-	cur = conn.cursor()
-	return cur
+	return(conn)
 
 def tocsv(filename,data):
 	with open(filename,'w', newline='') as file:
@@ -175,19 +174,30 @@ def labelsessions(df,tstamplist):
 			print(tstamplist[i])
 			print("Filelist looped")
 
-def labelNONAUTHsessions(tblnames, headerdict ,filepathdict, tstampdictionary):
+def labelNONAUTHsessions(tblnames, headers ,filepaths, tstamps):
 	for t in tblnames:
-		filepaths = "test"
+		filelist = listdir(filepaths[t])
 
 
-def labelauthsessions(filelist, header, openpath, savepath):
+
+
+def labelauthsessions(header, openpath, savepath):
 	"""Open unique user and computer pickle from auth table.
 	Read file as dataframe.  Loop through and extract AuthMap events and
 	the timestamp they occured. Store tstamps in dictionary keyed on unique usr/comp
 	Pickle dataframe. <- worth it?"""
+	filelist = listdir(openpath)
+	filelist.remove('$RECYCLE.BIN')
 	tstampdict = {}
+	emptyfiles = []
 	for f in filelist:
-		data = sorted(unpkl(join(openpath,f)), key=itemgetter(1))
+		try:
+			data = sorted(unpkl(os.path.join(openpath,f)), key=itemgetter(1))
+		except EOFError:
+			print("File " + f + " is empty!")
+			emptyfiles.append(f)
+			pkl(emptyfiles, '/media/pcgeller/SharedDrive/weirdo/workspace/emptyfiles.pkl')
+			next
 		df = pd.DataFrame(data, columns = header)
 		df.sort(columns = 'tstamp')
 		authdata = df.loc[df['authorient'] == "AuthMap"]
@@ -195,43 +205,69 @@ def labelauthsessions(filelist, header, openpath, savepath):
 		tstamplist = sorted(tstamplist)
 		tstampdict[f] = tstamplist
 		labelsessions(df, tstamplist)
+		pkl(tstampdict, '/home/pcgeller/workspace/weirdo/tstampdict.pkl')
 		pkl(df, os.path.abspath(savepath + f + '.pkl'))
 	return(tstampdict)
 
-def splittable(unqusrlist, table,cur, fieldname='usr', savepath='/media/pcgeller/SharedDrive/weirdo/'):
+def splittable(unqusrlist, table, conn, fieldname, filepaths):
 	"""Split a remote table by a fieldname.
 	Save as a pickle at ./table/uniquefieldname"""
+	filepath = filepaths.get(table)
+	toobig = []
 	for usr in unqusrlist:
-		savelocation = os.path.abspath(savepath + table + '/' + usr[0] + table + '.pkl')
+		if table == 'auth':
+			savelocation = os.path.join(filepath,usr)
+		else:
+			savelocation = os.path.abspath(filepath,usr + table + '.pkl')
+
 		if os.path.isfile(savelocation) == True:
-			print(usr[0] + ' File Exists')
+			print(usr + ' File Exists')
 			continue
 		else:
-			print("Getting: " + usr[0])
-			cur.execute("SELECT * FROM %s WHERE %s = '%s'" % (table, fieldname, usr[0]))
-			result = cur.fetchall()
-			pkl(result, os.path.abspath(savelocation))
+			try:
+				print("Getting: " + usr)
+				servercur = conn.cursor('serverside')
+				servercur.execute("SELECT * FROM %s WHERE %s = '%s'" % (table, fieldname, usr))
+				result = []
+				for record in servercur:
+					result.append(record)
+				pkl(result, os.path.abspath(savelocation))
+				cc(servercur)
+			except MemoryError:
+				print("Table is too big!  Saving and going to the next one")
+				toobig.extend(usr)
+				pkl(toobig, os.path.abspath('/media/pcgeller/SharedDrive/weirdo/workspace/toobig.pkl'))
+				cc(servercur)
+				next
+
+
+
 
 ##!!!!!Kludge before of messedup auth names
-def splitauthtable(unqusrlist, table,cur, savepath, fieldname='usr',):
+def splitauthtable(unqusrlist, table, conn, savepath, fieldname='srcusr',):
 	"""Split a remote table by a fieldname.
 	Save as a pickle at ./table/uniquefieldname"""
 	for usr in unqusrlist:
-		savelocation = os.path.abspath(savepath + '/' + usr[0])
+		savelocation = os.path.abspath(savepath + '/' + usr)
 		if os.path.isfile(savelocation) == True:
-			print(usr[0] + ' File Exists')
+			print(usr + ' File Exists')
 			continue
 		else:
-			print("Getting: " + usr[0])
-			cur.execute("SELECT * FROM %s WHERE %s = '%s'" % (table, fieldname, usr[0]))
-			result = cur.fetchall()
+			print("Getting: " + usr)
+			servercur = conn.cursor('serverside')
+			servercur.execute("SELECT * FROM %s WHERE %s = '%s'" % (table, fieldname, usr))
+			print("Query sent")
+			result = []
+			for record in servercur:
+				result.append(record)
 			pkl(result, os.path.abspath(savelocation))
+			cc(servercur)
 
-def addflows(cur):
-	print("Do work")
-
-def adddns(cur):
-	print("Do Work")
+def dfFilepathdict(tblnames):
+	dffp = {}
+	for t in tblnames:
+		dffp[t] = os.path.join('/media/pcgeller/SharedDrive/weirdo/dataframes/' + t)
+	return(dffp)
 
 def t2l(tuple):
 	'''converts a list of tuples to a list'''
@@ -245,29 +281,30 @@ def getheaders(tablelist):
 	for t in tablelist:
 		cur.execute("SELECT column_name from information_schema.columns WHERE \
 		table_name = '%s'" % (t))
-
 		headers[t]= t2l(cur.fetchall())
 	return(headers)
 
 ####Handy Variables
-cur = startcursor()
+conn = startconn()
+cur = conn.cursor()
 #KLUDGE to dedup so the sql queries don't need to run
 #uniqueusers returned by unq() contains duplicates
 uniqueusers = t2l(unpkl('jar/uniqueusers.pkl'))
 uniqueusers = list(set(uniqueusers))
 
-filepaths = {"auth":'/media/pcgeller/PHOTOS', "flows":'/media/pcgeller/SharedDrive/weirdo', \
-			"redteam":'/media/pcgeller/SharedDrive/weirdo',"proc":'/media/pcgeller/SharedDrive/weirdo', \
-			"dns":'/media/pcgeller/SharedDrive/weirdo'}
+filepaths = {"auth":'/media/pcgeller/PHOTOS', "flows":'/media/pcgeller/SharedDrive/weirdo/flows', \
+			"redteam":'/media/pcgeller/SharedDrive/weirdo/redteam',"proc":'/media/pcgeller/SharedDrive/weirdo/proc', \
+			"dns":'/media/pcgeller/SharedDrive/weirdo/dns'}
+
 
 alltblnames = t2l(gettblnames(cur))
 tblnames = alltblnames[:-1]
 #tblnamesNOAUTH = tblnames.remove('auth')
 headers = getheaders(tblnames)
-
+dfFilepaths = dfFilepathdict(tblnames)
 authfiles = listdir(filepaths['auth'])
 authfiles.remove('$RECYCLE.BIN')
-
+workspace = '/media/pcgeller/SharedDrive/weirdo/workspace/'
 ##Make some dummy variables
 authuniqueusersize = "26320"
 sampleusr = unpkl('jar/U8556')
@@ -279,6 +316,14 @@ l = list(x)
 filename = 'woc11.csv'
 unqusr = [('U66',),('U2837',)]
 
+sampleusr = unpkl(os.path.join(filepaths['auth'], "U2109"))
+sampledf = pd.DataFrame(sampleusr, columns = headers['auth'])
+
+samplecomp = unpkl(os.path.join(filepaths['auth'], "U2109"))
+samplecompdf = pd.DataFrame(samplecomp, columns = headers['auth'])
+
+#servercur = conn.cursor('serverside')
+#test = labelauthsessions(headers['auth'],filepaths['auth'],workspace)
 ####Handy Code
 # onlyfile = [f for f in listdir(authfilepath) if isfile(join(authfilepath,f))]
 # d = {f: [os.path.getsize(join(authfilepath, f)), size(os.path.getsize(join(authfilepath,f)))] for f in listdir(authfilepath)}
