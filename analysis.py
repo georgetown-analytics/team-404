@@ -147,7 +147,8 @@ def mkfiledictionary(path):
 	Sorted by their filesize in bytes."""
 	filelist = [f for f in listdir(path) if isfile(join(path,f))]
 	dict = {f: [os.path.getsize(join(path,f)), size(os.path.getsize(join(path,f)))] for f in filelist}
-	dict = sorted(dict, key = itemgetter(0))
+	#dict = sorted(dict, key = itemgetter(0))
+	return(dict)
 
 def labelsessions(df,tstamplist):
 	"""Label the sessions for a unique user or computer."""
@@ -285,7 +286,7 @@ def getheaders(tablelist):
 	return(headers)
 
 ####Handy Variables
-conn = startconn()
+conn = startconnection()
 cur = conn.cursor()
 #KLUDGE to dedup so the sql queries don't need to run
 #uniqueusers returned by unq() contains duplicates
@@ -305,9 +306,13 @@ dfFilepaths = dfFilepathdict(tblnames)
 authfiles = listdir(filepaths['auth'])
 authfiles.remove('$RECYCLE.BIN')
 workspace = '/media/pcgeller/SharedDrive/weirdo/workspace/'
+
+# authfiles = listdir(filepaths['auth'])
+# authfiles.remove('$RECYCLE.BIN')
+
 ##Make some dummy variables
 authuniqueusersize = "26320"
-sampleusr = unpkl('jar/U8556')
+# sampleusr = unpkl('jar/U8556')
 lastvalue = "C23917"
 jarpath = './jar'
 filelist = ["U8946"]
