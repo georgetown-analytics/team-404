@@ -3,3 +3,4 @@ accounts.sql
 /config/rdsconfig.py
 /jar
 *ipynb
+/__pycache__
