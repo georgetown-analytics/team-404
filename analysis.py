@@ -215,6 +215,7 @@ def splittable(unqusrlist, table, conn, fieldname, filepaths):
 	Save as a pickle at ./table/uniquefieldname"""
 	filepath = filepaths.get(table)
 	toobig = []
+	toomanyrows = {}
 	for usr in unqusrlist:
 		if table == 'auth':
 			savelocation = os.path.join(filepath,usr)
@@ -229,14 +230,21 @@ def splittable(unqusrlist, table, conn, fieldname, filepaths):
 				print("Getting: " + usr)
 				servercur = conn.cursor('serverside')
 				servercur.execute("SELECT * FROM %s WHERE %s = '%s'" % (table, fieldname, usr))
-				result = []
-				for record in servercur:
-					result.append(record)
-				pkl(result, os.path.abspath(savelocation))
-				cc(servercur)
+					if servercur.rowcount < 7000000:
+						print("Table is " + servercur.rowcount + " rows.  Fetching.")
+						result = []
+						for record in servercur:
+						result.append(record)
+						pkl(result, os.path.abspath(savelocation))
+						cc(servercur)
+					else:
+						print("Table " + usr + "is " + servercur.rowcount + "rows.  Skipping.")
+						toomanyrows[usr] = servercur.rowcount
+						pkl(os.path.join(filepaths['workspace'],"toomanyrows.pkl"))
+						next
 			except MemoryError:
 				print("Table is too big!  Saving and going to the next one")
-				toobig.extend(usr)
+				toobig.append(usr)
 				pkl(toobig, os.path.abspath('/media/pcgeller/SharedDrive/weirdo/workspace/toobig.pkl'))
 				cc(servercur)
 				next
@@ -244,25 +252,25 @@ def splittable(unqusrlist, table, conn, fieldname, filepaths):
 
 
 
-##!!!!!Kludge before of messedup auth names
-def splitauthtable(unqusrlist, table, conn, savepath, fieldname='srcusr',):
-	"""Split a remote table by a fieldname.
-	Save as a pickle at ./table/uniquefieldname"""
-	for usr in unqusrlist:
-		savelocation = os.path.abspath(savepath + '/' + usr)
-		if os.path.isfile(savelocation) == True:
-			print(usr + ' File Exists')
-			continue
-		else:
-			print("Getting: " + usr)
-			servercur = conn.cursor('serverside')
-			servercur.execute("SELECT * FROM %s WHERE %s = '%s'" % (table, fieldname, usr))
-			print("Query sent")
-			result = []
-			for record in servercur:
-				result.append(record)
-			pkl(result, os.path.abspath(savelocation))
-			cc(servercur)
+# ##!!!!!Kludge before of messedup auth names
+# def splitauthtable(unqusrlist, table, conn, savepath, fieldname='srcusr',):
+# 	"""Split a remote table by a fieldname.
+# 	Save as a pickle at ./table/uniquefieldname"""
+# 	for usr in unqusrlist:
+# 		savelocation = os.path.abspath(savepath + '/' + usr)
+# 		if os.path.isfile(savelocation) == True:
+# 			print(usr + ' File Exists')
+# 			continue
+# 		else:
+# 			print("Getting: " + usr)
+# 			servercur = conn.cursor('serverside')
+# 			servercur.execute("SELECT * FROM %s WHERE %s = '%s'" % (table, fieldname, usr))
+# 			print("Query sent")
+# 			result = []
+# 			for record in servercur:
+# 				result.append(record)
+# 			pkl(result, os.path.abspath(savelocation))
+# 			cc(servercur)
 
 def dfFilepathdict(tblnames):
 	dffp = {}
@@ -286,7 +294,7 @@ def getheaders(tablelist):
 	return(headers)
 
 ####Handy Variables
-conn = startconnection()
+conn = startconn()
 cur = conn.cursor()
 #KLUDGE to dedup so the sql queries don't need to run
 #uniqueusers returned by unq() contains duplicates
@@ -295,7 +303,8 @@ uniqueusers = list(set(uniqueusers))
 
 filepaths = {"auth":'/media/pcgeller/PHOTOS', "flows":'/media/pcgeller/SharedDrive/weirdo/flows', \
 			"redteam":'/media/pcgeller/SharedDrive/weirdo/redteam',"proc":'/media/pcgeller/SharedDrive/weirdo/proc', \
-			"dns":'/media/pcgeller/SharedDrive/weirdo/dns'}
+			"dns":'/media/pcgeller/SharedDrive/weirdo/dns', \
+			"workspace":'media/pcgellerSharedDrive/weirdo/workspace'}
 
 
 alltblnames = t2l(gettblnames(cur))
