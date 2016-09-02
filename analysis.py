@@ -150,80 +150,6 @@ def mkfiledictionary(path):
     #dict = sorted(dict, key = itemgetter(0))
     return(dict)
 
-def labelsessions(df,tstamplist):
-    """Label the sessions for a unique user or computer."""
-    i = 1
-    for s in tstamplist:
-        #print(s)
-        if i == 0:
-            print("first item")
-            print(i)
-            sub = df[(df.tstamp < tstamplist[i])]
-            df.loc[sub.index,'session'] = i
-            i += 1
-        elif i >= 1 and i < len(tstamplist) - 1:
-            print(i)
-            print(type(i))
-            print( i >= 1 and i < len(tstamplist) - 1)
-            sub = df[(df.tstamp >= tstamplist[i -1]) & (df.tstamp < tstamplist[i])]
-            if len(sub) == 0:
-                print("Nothing in tstamp window")
-                #df.loc[sub.index,'session'] = 0
-                next
-            #if len(sub) == 0:
-            df.loc[sub.index,'session'] = i
-            i += 1
-        elif i == len(tstamplist) - 1:
-            print("on last item")
-            sub = df[(df.tstamp >= tstamplist[i])]
-            df.loc[sub.index,'session'] = i
-            print(tstamplist[i])
-            print("Filelist looped")
-
-def labelNONAUTHsessions(tblnames, headers ,filepaths, tstamps):
-    for t in tblnames:
-        filelist = listdir(filepaths[t])
-        for f in filelist:
-            try:
-                data = sorted(unpkl(os.path.join(openpath,f)), key=itemgetter(1))
-            except EOFError:
-                print("File " + f + " is empty!")
-                emptyfiles.append(f)
-                pkl(emptyfiles, '/media/pcgeller/SharedDrive/weirdo/workspace/emptyfiles.pkl')
-                next
-            df = pd.DataFrame(data, columns = header)
-            df.sort(columns = 'tstamp')
-            labelsessions(df,tstamps[t])
-            pkl(df, os.path.join(filepaths['dataframes'],t,(f + '.pkl')))
-
-def labelauthsessions(header, openpath, filepaths):
-    """Open unique user and computer pickle from auth table.
-    Read file as dataframe.  Loop through and extract AuthMap events and
-    the timestamp they occured. Store tstamps in dictionary keyed on unique usr/comp
-    Pickle dataframe. <- worth it?"""
-    filelist = listdir(filepaths['auth'])
-    filelist.remove('$RECYCLE.BIN')
-    tstampdict = {}
-    emptyfiles = []
-    for f in filelist:
-        try:
-            data = sorted(unpkl(os.path.join(filepaths['auth'],f)), key=itemgetter(1))
-        except EOFError:
-            print("File " + f + " is empty!")
-            emptyfiles.append(f)
-            pkl(emptyfiles, '/media/pcgeller/SharedDrive/weirdo/workspace/emptyfiles.pkl')
-            next
-        df = pd.DataFrame(data, columns = header)
-        df.sort(columns = 'tstamp')
-        authdata = df.loc[df['authorient'] == "AuthMap"]
-        tstamplist = authdata['tstamp']
-        tstamplist = sorted(tstamplist)
-        tstampdict[f] = tstamplist
-        labelsessions(df, tstamplist)
-        pkl(tstampdict, '/home/pcgeller/workspace/weirdo/tstampdict.pkl')
-        pkl(df, os.path.join(filepaths['dataframes'],t,(f + 'df.pkl')))
-    return(tstampdict)
-
 def splittable(unqusrlist, table, conn, splitdict, filepaths):
     """Split a remote table by a fieldname.
     Save as a pickle at ./table/uniquefieldname"""
@@ -368,8 +294,6 @@ splitdict = {"auth":'srcusr',
             "dns":'srccomputer'}
 
 
-
-
 alltblnames = t2l(gettblnames(cur))
 tblnames = alltblnames[:-1]
 #tblnamesNOAUTH = tblnames.remove('auth')
@@ -387,7 +311,7 @@ authuniqueusersize = "26320"
 # sampleusr = unpkl('jar/U8556')
 lastvalue = "C23917"
 jarpath = './jar'
-filelist = ["U8946"]
+
 x = range(10)
 l = list(x)
 filename = 'woc11.csv'
@@ -396,18 +320,12 @@ nonRTusers = [x for x in uniqueusers if x not in uniquert]
 nonRTusrsamp = random.sample(nonRTusers, 350)
 usrs = nonRTusrsamp + uniquert
 
-sampleusr = unpkl(os.path.join(filepaths['auth'], "U2109"))
-sampledf = pd.DataFrame(sampleusr, columns = headers['auth'])
-
-samplecomp = unpkl(os.path.join(filepaths['auth'], "U2109"))
-samplecompdf = pd.DataFrame(samplecomp, columns = headers['auth'])
 #
-for t in tblnames:
-    splittable(usrs, t, conn, splitdict, filepaths)
+
 
 
 #servercur = conn.cursor('serverside')
-#test = labelauthsessions(headers['auth'],filepaths['auth'],workspace)
+# labelauthsessions(headers['auth'],filepaths['auth'],workspace)
 ####Handy Code
 # onlyfile = [f for f in listdir(authfilepath) if isfile(join(authfilepath,f))]
 # d = {f: [os.path.getsize(join(authfilepath, f)), size(os.path.getsize(join(authfilepath,f)))] for f in listdir(authfilepath)}
