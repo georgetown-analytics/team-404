@@ -320,6 +320,7 @@ nonRTusers = [x for x in uniqueusers if x not in uniquert]
 nonRTusrsamp = random.sample(nonRTusers, 350)
 usrs = nonRTusrsamp + uniquert
 
+
 #
 
 

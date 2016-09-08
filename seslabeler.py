@@ -15,7 +15,7 @@ samplecompdf = pd.DataFrame(samplecomp, columns = headers['auth'])
 #labelauthsessions(headers['auth'], filepaths, filelist)
 def labelsessions(df,tstamplist):
     """Label the sessions for a unique user or computer."""
-    i = 1
+    i = 0
     for s in tstamplist:
         #print(s)
         # if tstamplist[i] == tstamplist[i + 1]:
@@ -25,17 +25,17 @@ def labelsessions(df,tstamplist):
         if i == 0:
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             print("First item")
-            print(i)
+            # print(i)
             sub = df[(df.tstamp < tstamplist[i])]
             df.loc[sub.index,'session'] = i
             i += 1
         elif i >= 1 and i < len(tstamplist) - 1:
-            print(i)
-            print("Stuck in the middle with you." + str(i >= 1 and i < len(tstamplist) - 1))
+#            print(i)
+#            print("Stuck in the middle with you." + str(i >= 1 and i < len(tstamplist) - 1))
             sub = df[(df.tstamp >= tstamplist[i -1]) & (df.tstamp < tstamplist[i])]
             if len(sub) == 0:
-                print("///////")
-                print("Nothing in tstamp window")
+                # print("///////")
+                # print("Nothing in tstamp window")
                 #df.loc[sub.index,'session'] = 0
                 next
             #if len(sub) == 0:
@@ -49,21 +49,21 @@ def labelsessions(df,tstamplist):
             #print(tstamplist[i])
             print("Filelist looped")
 
-def labelNONAUTHsessions(headers ,filepaths, tstamps, sample = usrs, tblnames = tblnames.remove('auth')):
+def labelNONAUTHsessions(headers ,filepaths, tstamps, sample = usrs, tblnames = tblnames):
     for t in tblnames:
         filelist = listdir(filepaths[t])
         for f in filelist:
-            if f.rtrim(4) in sample:
+            if f.rstrip('.pkl') in sample:
                 try:
-                    data = sorted(unpkl(os.path.join(openpath,f)), key=itemgetter(1))
+                    data = sorted(unpkl(os.path.join(filepaths[t],f)), key=itemgetter(1))
                 except EOFError:
                     print("File " + f + " is empty!")
                     emptyfiles.append(f)
                     pkl(emptyfiles, '/media/pcgeller/SharedDrive/weirdo/workspace/emptyfiles.pkl')
                     next
-                df = pd.DataFrame(data, columns = header)
+                df = pd.DataFrame(data, columns = headers[t])
                 df.sort(columns = 'tstamp')
-                labelsessions(df,tstamps[t])
+                labelsessions(df,tstamps[f.rstrip('.pkl')])
                 pkl(df, os.path.join(filepaths['dataframes'],t,(f + '.pkl')))
             else:
                 print("not in sample")
@@ -80,6 +80,8 @@ def labelauthsessions(header, filepaths, sample):
     #filelist = sample
     tstampdict = {}
     emptyfiles = []
+    notfound = []
+    memerror = []
     t = 'auth'
     for f in filelist:
         #if os.path.isfile(os.path.join(filepaths['auth'],f)) == False:
@@ -89,12 +91,15 @@ def labelauthsessions(header, filepaths, sample):
             except EOFError:
                 print("File " + f + " is empty!")
                 emptyfiles.append(f)
-                pkl(emptyfiles, '/media/pcgeller/SharedDrive/weirdo/workspace/emptyfiles.pkl')
                 next
             except IOError:
-                print("File " + " not found.")
+                print("File " + f + " not found.")
+                notfound.append(f)
                 next
-
+            except MemoryError:
+                print("MEMORY ERROR with file: " + f)
+                memerror.append(f)
+                next
             df = pd.DataFrame(data, columns = header)
             df.sort(columns = 'tstamp')
             authdata = df.loc[df['authorient'] == "AuthMap"]
@@ -104,9 +109,17 @@ def labelauthsessions(header, filepaths, sample):
             labelsessions(df, tstamplist)
             pkl(df, os.path.join(filepaths['dataframes'],t,(f + 'df.pkl')))
         #else:
-            print("File " + f + " already exists.")
+            #print("File " + f + " already exists.")
             next
-    pkl(tstampdict, os.path.join(filepaths['workspace'],'tstampdict.pkl'))
-    #return(tstampdict)
+    pkl(emptyfiles, '/media/pcgeller/SharedDrive/weirdo/workspace/emptyfiles.pkl')
+    pkl(notfound, os.path.join(filepaths['workspace'],f))
+    pkl(memerror, os.path.join(filepaths['workspace'],f))
+    pkl(tstampdict, os.path.join(filepaths['workspace'],'tstampdict2.pkl'))
+    return(tstampdict)
 
-# tstampsusrs = unpkl(os.path.join(filepaths['workspace'],'usrtstampdict.pkl')
+#tstampsusrs = unpkl(os.path.join(filepaths['workspace'],'usrtstampdict.pkl'))
+
+#tstamps = unpkl('/home/pcgeller/workspace/weirdo/tstampdict2.pkl')
+
+tstamps = labelauthsessions(headers['auth'],filepaths,usrs)
+labelNONAUTHsessions(headers,filepaths,tstamps,usrs,tblnames)
